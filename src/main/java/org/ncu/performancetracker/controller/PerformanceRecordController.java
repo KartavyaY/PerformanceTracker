@@ -13,9 +13,10 @@ import org.ncu.performancetracker.service.PerformanceRecordService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/performance-records")
 public class PerformanceRecordController {
 
     private final PerformanceRecordService recordService;
@@ -25,7 +26,7 @@ public class PerformanceRecordController {
         this.recordService = recordService;
     }
 
-    @PostMapping("/athletes/{athleteId}/records")
+    @PostMapping("/{athleteId}")
     public ResponseEntity<PerformanceRecord> addRecord(
             @PathVariable Long athleteId,
             @Valid @RequestBody PerformanceRecord record) {
@@ -33,13 +34,13 @@ public class PerformanceRecordController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedRecord);
     }
 
-    @GetMapping("/athletes/{athleteId}/records")
+    @GetMapping("/{athleteId}")
     public ResponseEntity<List<PerformanceRecord>> getAthleteRecords(@PathVariable Long athleteId) {
         List<PerformanceRecord> records = recordService.findRecordsByAthleteId(athleteId);
         return ResponseEntity.ok(records);
     }
 
-    @GetMapping("/athletes/{athleteId}/records/metric/{metricName}")
+    @GetMapping("/{athleteId}/metric/{metricName}")
     public ResponseEntity<List<PerformanceRecord>> getAthleteRecordsByMetric(
             @PathVariable Long athleteId,
             @PathVariable String metricName) {
@@ -47,7 +48,7 @@ public class PerformanceRecordController {
         return ResponseEntity.ok(records);
     }
 
-    @GetMapping("/athletes/{athleteId}/records/daterange")
+    @GetMapping("/{athleteId}/date-range")
     public ResponseEntity<List<PerformanceRecord>> getAthleteRecordsByDateRange(
             @PathVariable Long athleteId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
@@ -56,7 +57,7 @@ public class PerformanceRecordController {
         return ResponseEntity.ok(records);
     }
 
-    @GetMapping("/athletes/{athleteId}/personal-bests")
+    @GetMapping("/{athleteId}/personal-bests")
     public ResponseEntity<Map<String, Double>> getPersonalBests(@PathVariable Long athleteId) {
         Map<String, Double> personalBests = recordService.findPersonalBestsByAthleteId(athleteId);
         return ResponseEntity.ok(personalBests);
@@ -71,17 +72,31 @@ public class PerformanceRecordController {
         return ResponseEntity.ok(comparison);
     }
 
-    @PutMapping("/records/{id}")
+    @PutMapping("/{athleteId}")
     public ResponseEntity<PerformanceRecord> updateRecord(
-            @PathVariable Long id,
+            @PathVariable Long athleteId,
             @Valid @RequestBody PerformanceRecord record) {
-        PerformanceRecord updatedRecord = recordService.updateRecord(id, record);
+        PerformanceRecord updatedRecord = recordService.updateRecord(athleteId, record);
         return new ResponseEntity<>(updatedRecord, HttpStatus.OK);
     }
 
-    @DeleteMapping("/records/{id}")
-    public ResponseEntity<String> deleteRecord(@PathVariable Long id) {
-        recordService.deleteRecord(id);
-        return new  ResponseEntity<>("Record with id " + id + " was deleted", HttpStatus.NO_CONTENT);
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteRecord(@RequestParam Long athleteId, @RequestParam Long metricId) {
+        Optional<PerformanceRecord> optionalRecord = recordService.findRecordById(metricId);
+
+        if (optionalRecord.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        PerformanceRecord record = optionalRecord.get();
+
+        if (!record.getAthlete().getId().equals(athleteId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Record does not belong to the specified athlete");
+        }
+
+        recordService.deleteRecord(metricId);
+        return ResponseEntity.ok("Record with id " + metricId + " was deleted");
     }
+
 }

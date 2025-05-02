@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class PerformanceRecordService {
@@ -120,18 +121,23 @@ public class PerformanceRecordService {
 
         record.setMetricName(updatedRecord.getMetricName());
         record.setValue(updatedRecord.getValue());
-        record.setDate(updatedRecord.getDate());
+        record.setDate(LocalDate.now());
         record.setRemarks(updatedRecord.getRemarks());
 
         return recordRepository.save(record);
     }
 
     @Transactional
-    public void deleteRecord(Long id) {
-        if (!recordRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Performance record not found with id: " + id);
+    public void deleteRecord(Long metricId) {
+        if (!recordRepository.existsById(metricId)) {
+            throw new ResourceNotFoundException("Performance record not found with id: " + metricId);
         }
 
-        recordRepository.deleteById(id);
+        recordRepository.deleteById(metricId);
     }
+
+    public Optional<PerformanceRecord> findRecordById(Long id) {
+        return recordRepository.findById(id);
+    }
+
 }

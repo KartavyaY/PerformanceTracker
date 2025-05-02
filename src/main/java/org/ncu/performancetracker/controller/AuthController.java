@@ -31,6 +31,9 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody AppUser user) {
+        if (userRepo.findByUsername(user.getUsername()).isPresent()) {
+            return ResponseEntity.badRequest().body("Username is already in use");
+        }
         user.setPassword(encoder.encode(user.getPassword()));
         userRepo.save(user);
         return ResponseEntity.ok("User registered successfully.");

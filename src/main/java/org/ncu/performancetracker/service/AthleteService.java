@@ -28,6 +28,10 @@ public class AthleteService {
         return athleteRepository.findById(id);
     }
 
+    public List<Athlete> findAthletesByName(String name) {
+        return athleteRepository.findAthletesByName(name);
+    }
+
     @Transactional
     public Athlete saveAthlete(Athlete athlete) {
         return athleteRepository.save(athlete);

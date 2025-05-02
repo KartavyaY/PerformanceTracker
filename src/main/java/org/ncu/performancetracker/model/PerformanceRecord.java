@@ -22,7 +22,6 @@ public class PerformanceRecord {
     @NotNull(message = "Value is required")
     private Double value;
 
-    @NotNull(message = "Date is required")
     private LocalDate date;
 
     private String remarks;
@@ -31,5 +30,13 @@ public class PerformanceRecord {
     @JoinColumn(name = "athlete_id")
     @JsonIgnore
     private Athlete athlete;
+
+
+    @PrePersist
+    public void prePersist() {
+        if (this.date == null) {
+            this.date = LocalDate.now();
+        }
+    }
 
 }

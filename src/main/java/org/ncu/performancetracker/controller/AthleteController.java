@@ -1,9 +1,12 @@
 package org.ncu.performancetracker.controller;
 
 import jakarta.validation.Valid;
+import org.ncu.performancetracker.model.AppUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import org.ncu.performancetracker.model.Athlete;
@@ -34,13 +37,18 @@ public class AthleteController {
                 .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/search-name")
+    public ResponseEntity<List<Athlete>> getAthletesByName(@RequestParam String name) {
+        return ResponseEntity.ok(athleteService.findAthletesByName(name));
+    }
+
     @PostMapping
     public ResponseEntity<Athlete> createAthlete(@Valid @RequestBody Athlete athlete) {
         Athlete createdAthlete = athleteService.saveAthlete(athlete);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdAthlete);
     }
 
-    @PostMapping("/listsave")
+    @PostMapping("/list-save")
     public ResponseEntity<List<Athlete>>  saveAthletes(@RequestBody List<Athlete> athletes) {
         List<Athlete> createdAthletes = athleteService.saveAthletes(athletes);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdAthletes);
@@ -56,11 +64,11 @@ public class AthleteController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAthlete(@PathVariable Long id) {
-        return athleteService.findAthleteById(id)
-                .map(athlete -> {
-                    athleteService.deleteAthlete(id);
-                    return ResponseEntity.noContent().<Void>build();
-                }).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<String> deleteAthlete(@PathVariable Long id) {
+        if (athleteService.findAthleteById(id).isPresent()) {
+            athleteService.deleteAthlete(id);
+            return new ResponseEntity<>("Athlete with id " + id + " was deleted",HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>("Athlete with id " + id + " was not found",HttpStatus.NOT_FOUND);
     }
 }
