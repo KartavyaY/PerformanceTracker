@@ -76,12 +76,12 @@ public class PerformanceRecordController {
             @PathVariable Long id,
             @Valid @RequestBody PerformanceRecord record) {
         PerformanceRecord updatedRecord = recordService.updateRecord(id, record);
-        return ResponseEntity.ok(updatedRecord);
+        return new ResponseEntity<>(updatedRecord, HttpStatus.OK);
     }
 
     @DeleteMapping("/records/{id}")
-    public ResponseEntity<Void> deleteRecord(@PathVariable Long id) {
+    public ResponseEntity<String> deleteRecord(@PathVariable Long id) {
         recordService.deleteRecord(id);
-        return ResponseEntity.noContent().build();
+        return new  ResponseEntity<>("Record with id " + id + " was deleted", HttpStatus.NO_CONTENT);
     }
 }
