@@ -5,7 +5,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.ncu.performancetracker.model.PerformanceRecord;
-import org.ncu.performancetracker.model.Athlete;
 import org.ncu.performancetracker.repository.PerformanceRecordRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
